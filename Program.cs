@@ -33,6 +33,7 @@ public class Program
             switch (input)
             {
                 case 1:
+                    Console.WriteLine("--------------------------------------------------");
                     Console.WriteLine("Listado de productos:");
                     var listaProductos = await dbController.List();
                     foreach(Productos producto in listaProductos)
@@ -42,18 +43,18 @@ public class Program
                     Console.WriteLine("--------------------------------------------------");
                     break;
                 case 2:
-                    Console.WriteLine("Ingrese el id del producto:");
+                    Console.Write("Ingrese el id del producto: ");
                     int idInsert = Convert.ToInt32(Console.ReadLine());
-                    Console.WriteLine("Ingrese el nombre del producto:");
+                    Console.Write("\nIngrese el nombre del producto: ");
                     string nameInsert = Console.ReadLine()!;
-                    Console.WriteLine("Ingrese el precio del producto:");
+                    Console.Write("\nIngrese el precio del producto: ");
                     double priceInsert = Convert.ToDouble(Console.ReadLine());
-                    Console.WriteLine("Ingrese las unidades del producto:");
+                    Console.Write("\nIngrese las unidades del producto: ");
                     int unitsInsert = Convert.ToInt32(Console.ReadLine());
                     Productos nuevoProducto = new Productos( idInsert, nameInsert, priceInsert, unitsInsert );
                     await dbController.Insert(nuevoProducto);
                     //session.Execute($"insert into products (id, name, price, units) values ({idInsert}, '{nameInsert}', {priceInsert}, {unitsInsert})");
-                    Console.WriteLine("--------------------------------------------------");
+                    Console.WriteLine("\n--------------------------------------------------");
                     break;
                 case 3:
                     Console.WriteLine("Ingrese el id del producto a actualizar:");

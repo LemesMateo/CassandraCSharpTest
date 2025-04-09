@@ -37,33 +37,44 @@ public class DbController
     }
     public async Task<Productos> Get(string id)
     {
-        Productos producto = await _mapper.FirstOrDefaultAsync<Productos>("SELECT name, price, units FROM products WHERE id = ?", id);
+        Productos producto = await _mapper.FirstOrDefaultAsync<Productos>("SELECT id, name, price, units FROM products WHERE id = ?", int.Parse(id));
         return producto;
     }
     public async Task Delete(string id)
     {
-        //Productos result = await _mapper.FirstOrDefaultAsync<Productos>("SELECT id, name, price, units FROM products WHERE id = ?", int.Parse(id));
-        var stm = await _session.PrepareAsync("DELETE FROM products WHERE id = ?", id);
-        
-        //_session.Execute("DELETE FROM products WHERE id = ?", id);
-        //session.Execute($"delete from products where id = {idDelete}");
+       
+        try
+        {
+            var producto = await Get(id);
+            if (producto == null)
+            {
+                Console.WriteLine("\nEl id ingresado no existe");
+                return;
+            }
+            var stm = await _session.PrepareAsync("DELETE FROM products WHERE id = ?");
+            BoundStatement bound = stm.Bind(producto.id);
+            await _session.ExecuteAsync(bound);
+            Console.WriteLine("\nEl producto fue eliminado correctamente");
+            return;
 
-        BoundStatement bound = stm.Bind(id);
-        await _session.ExecuteAsync(bound);
-        return;
-        // Necesito saber que me devuelve _session.ExecuteAsync(bound) para poder avisarle al usuario que pasó
-        // también necesitamos un try catch para manejar excepciones, tendría que empezar desde el comienzo(linea 57)
+        }
+        catch(Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }        
     }
     public async Task Update(Productos producto)
     {
         Productos result = await _mapper.FirstOrDefaultAsync<Productos>("SELECT * FROM products WHERE id = ?", producto.id);
         if (result == null)
         {
+            Console.WriteLine("\nEl id ingresado no existe");
             return;
         }
         var stm = await _session.PrepareAsync("UPDATE products SET name = ?, price = ?, units = ? WHERE id = ?");
         BoundStatement bound = stm.Bind(producto.name, producto.price, producto.units, producto.id);
         await _session.ExecuteAsync(bound);
+        Console.WriteLine("\nEl producto fue actualizado correctamente");
         // Necesito saber que me devuelve _session.ExecuteAsync(bound) para poder avisarle al usuario que pasó
         // también necesitamos un try catch para manejar excepciones, tendría que empezar desde el comienzo(linea 57)
         return;
@@ -73,12 +84,17 @@ public class DbController
         Productos result = await _mapper.FirstOrDefaultAsync<Productos>("SELECT * FROM products WHERE id = ?", producto.id);
         if (result != null)
         {
+            Console.WriteLine("\nEl id ingresado ya existe");
             return;
+        } else
+        {
+            var stm = await _session.PrepareAsync("INSERT INTO products (id, name, price, units) VALUES (?, ?, ?, ?)");
+            BoundStatement bound = stm.Bind(producto.id, producto.name, producto.price, producto.units);
+            await _session.ExecuteAsync(bound);
+            Console.WriteLine("\nEl producto fue insertado correctamente");
+            return;
+
         }
-        var stm = await _session.PrepareAsync("INSERT INTO products (id, name, price, units) VALUES (?, ?, ?, ?)");
-        BoundStatement bound = stm.Bind(producto.id, producto.name, producto.price, producto.units);
-        await _session.ExecuteAsync(bound);
-        return;
         // Necesito saber que me devuelve _session.ExecuteAsync(bound) para poder avisarle al usuario que pasó
         // también necesitamos un try catch para manejar excepciones, tendría que empezar desde el comienzo(linea 71)
     }
